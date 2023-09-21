@@ -1,4 +1,5 @@
 from django.db import models
+from djshop.apps.catalog.managers import CategoryQuerySet
 from treebeard.mp_tree import MP_Node
 
 
@@ -7,6 +8,8 @@ class Category(MP_Node):
     description = models.CharField(max_length=2048, null=True, blank=True)
     is_public = models.BooleanField(default=True)
     slug = models.SlugField()
+
+    objects = CategoryQuerySet.as_manager()
 
     def __str__(self):
         return self.title
