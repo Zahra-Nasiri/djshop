@@ -51,8 +51,9 @@ class ProductClass(models.Model):
     track_stock = models.BooleanField(default=True)
     require_shipping = models.BooleanField(default=True)
 
-    options = models.ManyToManyField('Option')
+    options = models.ManyToManyField('Option', blank=True)
 
+    @property
     def has_attribute(self):
         return self.attributes.exists()
 
@@ -61,8 +62,8 @@ class ProductClass(models.Model):
 
 
     class Meta:
-        verbose_name = 'Product'
-        verbose_name_plural = 'Products'
+        verbose_name = 'Product Class'
+        verbose_name_plural = 'Product Classes'
 
 
 class ProductAttribute(models.Model):
