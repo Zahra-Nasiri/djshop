@@ -1,6 +1,7 @@
 from django.db import models
 from djshop.apps.catalog.managers import CategoryQuerySet
 from treebeard.mp_tree import MP_Node
+from djshop.libs.db.fields import UpperCaseCharField
 
 
 class Category(MP_Node):
@@ -114,3 +115,50 @@ class Option(models.Model):
         verbose_name = 'Option'
         verbose_name_plural = 'Options'
 
+
+class Product(models.Model):
+    class ProductTypeChoice(models.TextChoices):
+        standalone = 'standalone'
+        parent = 'parent'
+        child = 'child'
+
+    structure = models.CharField(max_length=16, choices=ProductTypeChoice.choices, default=ProductTypeChoice.standalone)
+    parent = models.ForeignKey("self", related_name="children", on_delete=models.CASCADE, null=True, blank=True)
+    title = models.CharField(max_length=128, blank=True, null=True)
+    upc = UpperCaseCharField(max_length=24, unique=True, blank=True, null=True)
+    is_public = models.BooleanField(default=True)
+    meta_title = models.CharField(max_length=128, null=True, blank=True)
+    meta_description = models.TextField(null=True, blank=True)
+    slug = models.SlugField(unique=True, allow_unicode=True)
+    product_class = models.ForeignKey(ProductClass, on_delete=models.PROTECT, null=True, blank=True, related_name='products')
+    attributes = models.ManyToManyField(ProductAttribute, through='ProductAttributeValue')
+    recommended_products = models.ManyToManyField('catalog.Product', through='ProductRecommendation', blank=True)
+
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+
+class ProductAttributeValue(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    attribute = models.ForeignKey(ProductAttribute, on_delete=models.CASCADE)
+
+    value_text = models.TextField(null=True, blank=True)
+    value_integer = models.IntegerField(null=True, blank=True)
+    value_float = models.FloatField(null=True, blank=True)
+    value_option = models.ForeignKey(OptionGroupValues, on_delete=models.PROTECT)
+    value_multi_option = models.ManyToManyField(OptionGroupValues)
+
+    class Meta:
+        verbose_name = "Attribute Value"
+        verbose_name_plural = "Attribute Values"
+        unique_together = ('product', 'attribute')
+
+
+class ProductRecommendation(models.Model):
+    primary = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='primary_recommendation')
+    recommendation = models.ForeignKey(Product, on_delete=models.CASCADE)
+    rank = models.PositiveIntegerField(default=8)
+
+    class Meta:
+        unique_together = ('primary', 'recommendation')
+        ordering = ('primary', '-rank')

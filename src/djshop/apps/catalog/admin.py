@@ -2,7 +2,7 @@ from django.contrib import admin
 from treebeard.admin import TreeAdmin
 from django.db.models import Count
 from treebeard.forms import movenodeform_factory
-from djshop.apps.catalog.models import Category, ProductClass, Option, ProductAttribute
+from djshop.apps.catalog.models import Category, ProductClass, Option, ProductAttribute, ProductRecommendation
 # Register your models here.
 
 class CategoryAdmin(TreeAdmin):
@@ -14,6 +14,12 @@ admin.site.register(Option)
 class ProductAttributeInline(admin.TabularInline):
     model = ProductAttribute
     extra = 2
+
+
+class ProductRecommendationInline(admin.TabularInline):
+    model = ProductRecommendation
+    extra = 2
+    fk_name = 'primary'
 
 
 class AttributeCountFilter(admin.SimpleListFilter):
@@ -37,7 +43,7 @@ class AttributeCountFilter(admin.SimpleListFilter):
 class ProductClassAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'require_shipping', 'track_stock', 'has_attribute', 'attribute_count')
     list_filter = ('require_shipping', 'track_stock', AttributeCountFilter)
-    inlines = [ProductAttributeInline]
+    inlines = [ProductAttributeInline, ProductRecommendationInline]
     actions = ['enable_track_stock']
     prepopulated_fields = {"slug": ("title",)}
 
