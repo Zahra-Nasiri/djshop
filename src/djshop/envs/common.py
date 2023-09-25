@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'channels',
 
     'djshop.apps.catalog',
+    'djshop.apps.media',
+
 ]
 
 MIDDLEWARE = [
